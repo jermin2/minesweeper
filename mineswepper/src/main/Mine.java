@@ -8,8 +8,8 @@ import javax.swing.SwingUtilities;
 
 public class Mine extends JFrame{
 
-	private final int FRAME_WIDTH = 250;
-	private final int FRAME_HEIGHT = 290;
+	private final int FRAME_WIDTH = 320;
+	private final int FRAME_HEIGHT = 300;
 	
 	private final JLabel statusbar;
 	
@@ -23,7 +23,11 @@ public class Mine extends JFrame{
 		add(statusbar, BorderLayout.SOUTH);
 		add(new Board(statusbar));
 		
-		setResizable(false);
+		setResizable(true);
+		
+		
+
+
 	}
 	
 	
@@ -34,6 +38,9 @@ public class Mine extends JFrame{
 			public void run() {
 				JFrame ex = new Mine();
 				ex.setVisible(true);
+				//Game g = new Game();
+				//g.setup();
+				//g.DEBUG_printTiles();
 			}
 		});
 	}
