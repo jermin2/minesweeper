@@ -3,6 +3,7 @@ package main;
 import javax.imageio.ImageIO;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.Timer;
 
 import main.Game.Tile;
 
@@ -11,16 +12,23 @@ import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsEnvironment;
 import java.awt.Image;
 import java.awt.Transparency;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.net.URL;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.HashMap;
 
 public class Board extends JPanel{
 
 	private JLabel statusbar;
+	private JLabel timerlbl;
+	
+	Timer update_timer;
 	//private Image image;
 	
 	HashMap<PicOrder, Image> images;
@@ -53,8 +61,9 @@ public class Board extends JPanel{
 		
 	}
 	
-	public Board(JLabel statusbar){
+	public Board(JLabel statusbar, JLabel timerlbl){
 		this.statusbar = statusbar;
+		this.timerlbl = timerlbl;
 		
 		setupBoard(GAME_WIDTH, GAME_HEIGHT);
 		
@@ -63,7 +72,9 @@ public class Board extends JPanel{
 		
 		game = new Game();
 		game.setup(GAME_WIDTH, GAME_HEIGHT, GAME_MINES);
-		game.state = Game.State.Running;
+		game.state = Game.State.Setup;
+		
+		update_timer = new Timer(100, new TimerListener());
 		
 		addMouseListener(new MinesAdapter());
 		statusbar.setText("Loaded");
@@ -118,28 +129,50 @@ public class Board extends JPanel{
 	
 	@Override
 	protected void paintComponent(Graphics g) {
-		// TODO Auto-generated method stub
-		//super.paintComponent(g);
-		
-		//for each Tile, draw the image
-		
-		
-		if(game.state == Game.State.Running){
+		super.paintComponent(g);
+
+
 			for (int x = 0; x<GAME_WIDTH;x++)
 				for(int y=0; y<GAME_HEIGHT;y++){
 					g.drawImage(images.get(game.tiles[x][y].picture), x*PIC_SIZE, y*PIC_SIZE, this);
 					//g.drawImage(images.get(PicOrder.BLANK_PR), x*PIC_SIZE, y*PIC_SIZE, this);
 				}
+
+	}
+	
+	public void startGame(){
+		
+		update_timer.restart();
+		update_timer.start();
+		game.startGame();
+	}
+	
+	public void stopGame(){
+		update_timer.stop();
+	}
+	
+	class TimerListener implements ActionListener {
+		
+		DecimalFormat f = new DecimalFormat("###.#");
+		public void actionPerformed(ActionEvent e){
+						
+			String ms = f.format(game.get_elapsed_time());
+			timerlbl.setText(ms);
+
 		}
 	}
 	
 	class MinesAdapter extends MouseAdapter {
 		@Override
 		public void mousePressed(MouseEvent e){
+			
+			if (!game.isRunning())
+				startGame();
 			statusbar.setText(e.getX() + " " + e.getY());
 			int x = e.getX()/PIC_SIZE;
 			int y = e.getY()/PIC_SIZE;
-			game.tiles[x][y].updateVisible(Tile.CLICKED);
+			game.click(x, y);
+			
 			repaint();
 			//Find the tile that was clicked
 		}

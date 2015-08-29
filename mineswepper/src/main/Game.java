@@ -1,5 +1,10 @@
 package main;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.Timer;
+import java.util.TimerTask;
+
 import main.Board.PicOrder;
 
 
@@ -15,6 +20,8 @@ public class Game {
 	private int NUM_MINES = 20;
 	
 	private int mines_remaining = 5;
+	
+	public long start_time;
 
 	public Tile[][] tiles;
 	
@@ -88,6 +95,28 @@ public class Game {
 		return true;
 	}
 	
+	public void startGame(){
+		state = State.Running;
+		start_time = System.currentTimeMillis();
+	}
+	
+	public double get_elapsed_time(){
+		System.out.println(start_time);
+		System.out.println(System.currentTimeMillis());
+		long cur_time = System.currentTimeMillis() - start_time;
+		System.out.println(cur_time/1000.0);
+		return cur_time/1000.0;
+	}
+	
+	public boolean isRunning(){
+		return state == State.Running;
+	}
+	
+	public boolean isEnded(){
+		if(state == State.Lose || state == State.Win)
+			return true;
+		return false;
+	}
 	/**
 	 * Setup using the default values
 	 */
@@ -146,17 +175,20 @@ public class Game {
 				for (int f=-1;f<=1;f++)
 					for (int g=-1;g<=1;g++){
 						
+						
 						//Check the neighbours are within the bounds
 						if(checkBounds(x+f, y+g)){
 							Tile neighbour = tiles[x+f][y+g];
 							
-							//Display the neighbours tile
-							if(neighbour.value != -1)
-								neighbour.updateVisible(Tile.CLICKED);
-							
-							//if the neighbour is a zero, call this recursively
-							if(neighbour.value == 0)
-								this.click(x+f, y+g);
+							if (neighbour.visible != Tile.CLICKED){
+								//Display the neighbours tile
+								if(neighbour.value != -1)
+									neighbour.updateVisible(Tile.CLICKED);
+								
+								//if the neighbour is a zero, call this recursively
+								if(neighbour.value == 0)
+									this.click(x+f, y+g);
+							}
 						}
 					}
 				
@@ -194,7 +226,7 @@ public class Game {
 		public static final int FLAG = 2;
 		public static final int QUESTION = 3;
 		int value = 0;
-		int visible = Tile.CLICKED;
+		int visible = Tile.UNCLICKED;
 		PicOrder picture = PicOrder.BLANK;
 		
 		

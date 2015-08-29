@@ -12,6 +12,7 @@ public class Mine extends JFrame{
 	private final int FRAME_HEIGHT = 300;
 	
 	private final JLabel statusbar;
+	private final JLabel timerlbl;
 	
 	public Mine() {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -20,8 +21,11 @@ public class Mine extends JFrame{
 		setTitle("MineSweeper");
 		
 		statusbar = new JLabel("");
+		timerlbl = new JLabel("00");
+		
 		add(statusbar, BorderLayout.SOUTH);
-		add(new Board(statusbar));
+		add(new Board(statusbar, timerlbl));
+		add(timerlbl, BorderLayout.NORTH);
 		
 		setResizable(true);
 		
