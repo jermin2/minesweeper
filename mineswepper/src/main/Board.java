@@ -3,9 +3,8 @@ package main;
 import javax.imageio.ImageIO;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 import javax.swing.Timer;
-
-import main.Game.Tile;
 
 import java.awt.Graphics;
 import java.awt.GraphicsConfiguration;
@@ -27,6 +26,7 @@ public class Board extends JPanel{
 
 	private JLabel statusbar;
 	private JLabel timerlbl;
+	private JLabel minesLeft;
 	
 	Timer update_timer;
 	//private Image image;
@@ -61,9 +61,10 @@ public class Board extends JPanel{
 		
 	}
 	
-	public Board(JLabel statusbar, JLabel timerlbl){
+	public Board(JLabel statusbar, JLabel timerlbl, JLabel minesLeft){
 		this.statusbar = statusbar;
 		this.timerlbl = timerlbl;
+		this.minesLeft = minesLeft;
 		
 		setupBoard(GAME_WIDTH, GAME_HEIGHT);
 		
@@ -79,6 +80,17 @@ public class Board extends JPanel{
 		addMouseListener(new MinesAdapter());
 		statusbar.setText("Loaded");
 		
+		reset();
+		
+		repaint();
+	}
+	
+	public void reset(){
+		stopGame();
+		game.reset();
+		
+		timerlbl.setText("Elapsed Time : 00.00");
+		minesLeft.setText("Mines Left: " + game.getNumMinesLeft());
 		repaint();
 	}
 	
@@ -149,14 +161,15 @@ public class Board extends JPanel{
 	
 	public void stopGame(){
 		update_timer.stop();
+		game.stopGame();
 	}
 	
 	class TimerListener implements ActionListener {
 		
-		DecimalFormat f = new DecimalFormat("###.#");
+		DecimalFormat f = new DecimalFormat("##0.00");
 		public void actionPerformed(ActionEvent e){
 						
-			String ms = f.format(game.get_elapsed_time());
+			String ms = "Elapsed Time: " + f.format(game.get_elapsed_time());
 			timerlbl.setText(ms);
 
 		}
@@ -166,13 +179,25 @@ public class Board extends JPanel{
 		@Override
 		public void mousePressed(MouseEvent e){
 			
-			if (!game.isRunning())
+			//If the game is setup, then clicking on a tile should start the game
+			if (game.isSetup())
 				startGame();
+			
 			statusbar.setText(e.getX() + " " + e.getY());
 			int x = e.getX()/PIC_SIZE;
 			int y = e.getY()/PIC_SIZE;
-			game.click(x, y);
 			
+			if(SwingUtilities.isLeftMouseButton(e))
+				game.click(x, y);
+			if(SwingUtilities.isRightMouseButton(e))
+				game.right_click(x,y);
+			
+			minesLeft.setText("Mines Left: " + game.getNumMinesLeft());
+			
+			//Check for win/lose conditions
+			if(game.isEnded()){
+				stopGame();
+			}
 			repaint();
 			//Find the tile that was clicked
 		}
